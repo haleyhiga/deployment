@@ -14,9 +14,10 @@ let addHomeworkButton = document.querySelector("#add-homework-button");
 let editID = null;
 
 // add stuff here
+// add stuff here
 const apiUrl = window.location.protocol === 'file:'
 ? 'http://localhost:8080' // Local API server during development
-: ''; // Production API
+: 'http://backend-service:8080'; // Kubernetes DNS name for backend service
 
 function saveHomework(){
     console.log("Save button clicked.")
