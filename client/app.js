@@ -8,7 +8,7 @@ let inputHomeworkCourse = document.querySelector("#add-homework-course");
 let inputHomeworkNotes = document.querySelector("#add-homework-notes");
 
 let saveHomeworkButton = document.querySelector("#save-homework-button")
-
+let addHomeworkButton = document.querySelector("#add-homework-button");
 
 
 let editID = null;
@@ -133,4 +133,5 @@ function deleteHomework(data){
 }
 
 saveHomeworkButton.onclick = saveHomework;
+addHomeworkButton.onclick = saveHomework;
 loadHomeworkFromServer();
