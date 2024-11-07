@@ -2,14 +2,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: planner-ingress
+  namespace: default
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: nginx
   rules:
   - host: planner.zorran.tech
     http:
       paths:
-      - path: /api
+      - path: /backend
         pathType: Prefix
         backend:
           service:

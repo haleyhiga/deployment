@@ -17,7 +17,7 @@ let editID = null;
 // add stuff here
 const apiUrl = window.location.protocol === 'file:'
 ? 'http://127.0.0.1:8080' // Local API server during development
-: 'http://planner.zorran.tech'; // Your domain
+: 'http://planner.zorran.tech/backend'; // Your domain
 
 function saveHomework(){
     console.log("Save button clicked.")
