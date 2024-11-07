@@ -16,8 +16,8 @@ let editID = null;
 // add stuff here
 // add stuff here
 const apiUrl = window.location.protocol === 'file:'
-? 'http://localhost:8080' // Local API server during development
-: 'http://backend-service:8080'; // Kubernetes DNS name for backend service
+? 'http://127.0.0.1:8080' // Local API server during development
+: 'http://planner.zorran.tech'; // Your domain
 
 function saveHomework(){
     console.log("Save button clicked.")
@@ -29,10 +29,10 @@ function saveHomework(){
 
     console.log("Data:",data)
     let method = "POST";
-    let URL = "http://localhost:8080/homework"
+    let URL = `${apiUrl}/homework`;
     if(editID){
         method = "PUT";
-        URL = "http://localhost:8080/homework/"+editID;
+        URL = `${apiUrl}/homework/${editID}`;
     }
     fetch(URL,{
         method: method,
@@ -44,7 +44,6 @@ function saveHomework(){
         console.log("New homework created",response)
         plannerWrapper.textContent = "";
         loadHomeworkFromServer()
-        
     })
     inputHomeworkName.value = "";
     inputHomeworkDate.value = "";
@@ -100,7 +99,7 @@ function addHomework(data){
 }
 
 function loadHomeworkFromServer() {
-    fetch("http://localhost:8080/homework")
+    fetch(`${apiUrl}/homework`)
     .then(function(response){
         response.json()
             .then(function(data){
