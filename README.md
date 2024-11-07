@@ -131,3 +131,49 @@ Replace `<your-machine-ip>` with your machine's actual IP address.
 4. Save and exit the editor.
 
 **Note:** Modifying the hosts file requires administrative privileges.
+
+### Installing Kubernetes (MicroK8s) and Enabling Ingress
+
+To deploy the application on Kubernetes, you need to install Kubernetes and enable ingress. You can use MicroK8s for a lightweight Kubernetes installation. Here are the steps to install MicroK8s on Ubuntu:
+
+1. **Update your system:**
+
+   ```bash
+   sudo apt update
+   sudo apt upgrade -y
+   ```
+
+2. **Install MicroK8s:**
+
+   ```bash
+   sudo snap install microk8s --classic
+   ```
+
+3. **Add your user to the MicroK8s group:**
+
+   ```bash
+   sudo usermod -a -G microk8s $USER
+   sudo chown -f -R $USER ~/.kube
+   ```
+
+4. **Log out and back in to apply the group change.**
+
+5. **Check the status of MicroK8s:**
+
+   ```bash
+   microk8s status --wait-ready
+   ```
+
+6. **Enable necessary MicroK8s add-ons:**
+
+   ```bash
+   microk8s enable dns dashboard ingress
+   ```
+
+7. **Verify the installation:**
+
+   ```bash
+   microk8s kubectl get all --all-namespaces
+   ```
+
+You now have a running Kubernetes cluster with ingress enabled.
