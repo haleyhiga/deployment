@@ -5,7 +5,7 @@ from planner import Planner
 app = Flask(__name__)
 
 
-@app.route("/homework/<int:homework_id>",methods=["OPTIONS"])
+@app.route("/backend/homework/<int:homework_id>",methods=["OPTIONS"])
 def handle_cors_options(homework_id):
     return "",204,{
         "Access-Control-Allow-Origin":"*",
@@ -14,19 +14,19 @@ def handle_cors_options(homework_id):
     }
 
 
-@app.route("/homework", methods=["GET"])
+@app.route("/backend/homework", methods=["GET"])
 def retrieve_homework():
     db = Planner("planner_db.db")
     homework = db.getHomework()
     return homework, 200, {"Access-Control-Allow-Origin":"*"}
 
-@app.route("/homework/<int:homework_id>",methods=["GET"])
+@app.route("/backend/homework/<int:homework_id>",methods=["GET"])
 def retrieveSingleHomework(homework_id):
     db = Planner("planner_db.db")
     homework = db.getSingleHomework(homework_id)
     return homework, 200, {"Access-Control-Allow-Origin":"*"}
 
-@app.route("/homework", methods=["POST"])
+@app.route("/backend/homework", methods=["POST"])
 def create_homework():
     db = Planner("planner_db.db")
     name = request.form["name"]
@@ -37,7 +37,7 @@ def create_homework():
     db.createHomework(name,date,desc,course,notes)
     return "Created", 201, {"Access-Control-Allow-Origin":"*"}
 
-@app.route("/homework/<int:homework_id>",methods=["PUT"]) 
+@app.route("/backend/homework/<int:homework_id>",methods=["PUT"]) 
 def update_homework(homework_id):
     db = Planner("planner_db.db")
     homework = db.getSingleHomework(homework_id)
@@ -55,7 +55,7 @@ def update_homework(homework_id):
     else:
         return f"Homework {homework_id}  not found", 404, {"Access-Control-Allow-Origin":"*"}
     
-@app.route("/homework/<int:homework_id>",methods=["DELETE"])
+@app.route("/backend/homework/<int:homework_id>",methods=["DELETE"])
 def delete_homework(homework_id):
     db = Planner("planner_db.db")
     homework = db.getSingleHomework(homework_id)
