@@ -5,6 +5,24 @@ if [ -z "$DOCKER_USERNAME" ]; then
   read -p "Enter your Docker username: " DOCKER_USERNAME
 fi
 
+# Ask if the user wants to replace the URL in app.js and ingress.yaml
+read -p "Do you want to replace the URL in app.js and ingress.yaml? (y/n): " url_choice
+if [ "$url_choice" == "y" ]; then
+  read -p "Enter the new URL (e.g., test.zorran.tech): " new_url
+  echo "Updating URL in app.js and ingress.yaml..."
+  # Backup original app.js and ingress.yaml
+  cp client/app.js client/app.js.bak
+  cp ingress.yaml ingress.yaml.bak
+  # Replace the URL in app.js
+  sed -i "s|: 'http://.*'; // Use the Ingress path|: 'http://$new_url/backend'; // Use the Ingress path|g" client/app.js
+  # Replace the URL in ingress.yaml
+  sed -i "s|host: .*|host: $new_url|g" ingress.yaml
+  UPDATE_APPJS=true
+  UPDATE_INGRESS=true
+else
+  echo "Skipping URL replacement in app.js and ingress.yaml."
+fi
+
 # Ask if the user wants to rebuild Docker images
 read -p "Do you want to rebuild Docker images? (y/n): " rebuild_choice
 if [ "$rebuild_choice" == "y" ]; then
@@ -17,7 +35,7 @@ if [ "$rebuild_choice" == "y" ]; then
   docker push $DOCKER_USERNAME/plannerfrontend:latest
   docker push $DOCKER_USERNAME/plannerbackend:latest
   echo "Updating deployment files with Docker images..."
-  # Backup original files
+  # Backup original deployment files
   cp backend-deployment.yaml backend-deployment.yaml.bak
   cp frontend-deployment.yaml frontend-deployment.yaml.bak
   # Replace image names in deployment files
@@ -44,9 +62,28 @@ if [ "$deploy_choice" == "y" ]; then
     mv frontend-deployment.yaml.bak frontend-deployment.yaml
   fi
 
+  # Restore original app.js and ingress.yaml if they were modified
+  if [ "$UPDATE_APPJS" == "true" ]; then
+    echo "Restoring original app.js..."
+    mv client/app.js.bak client/app.js
+  fi
+  if [ "$UPDATE_INGRESS" == "true" ]; then
+    echo "Restoring original ingress.yaml..."
+    mv ingress.yaml.bak ingress.yaml
+  fi
+
   echo "Deployment complete."
 else
   echo "Skipping deployment."
+  # Restore original app.js and ingress.yaml if they were modified but deployment was skipped
+  if [ "$UPDATE_APPJS" == "true" ]; then
+    echo "Restoring original app.js..."
+    mv client/app.js.bak client/app.js
+  fi
+  if [ "$UPDATE_INGRESS" == "true" ]; then
+    echo "Restoring original ingress.yaml..."
+    mv ingress.yaml.bak ingress.yaml
+  fi
 fi
 
 # Optionally delete resources
