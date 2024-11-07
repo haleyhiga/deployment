@@ -1,81 +1,66 @@
 #!/bin/bash
 
-# Usage:
-# ./deploy.sh deploy <docker_username>   # To build, push images and deploy resources
-# ./deploy.sh teardown                   # To tear down resources
+# Prompt for Docker username if not set
+if [ -z "$DOCKER_USERNAME" ]; then
+  read -p "Enter your Docker username: " DOCKER_USERNAME
+fi
 
-ACTION=$1
-DOCKER_USERNAME=$2
+# Ask if the user wants to rebuild Docker images
+read -p "Do you want to rebuild Docker images? (y/n): " rebuild_choice
+if [ "$rebuild_choice" == "y" ]; then
+  echo "Building Docker images..."
+  # Build frontend image
+  (cd ./client && docker build -t $DOCKER_USERNAME/plannerfrontend:latest .)
+  # Build backend image
+  (cd ./server && docker build -t $DOCKER_USERNAME/plannerbackend:latest .)
+  echo "Pushing Docker images to Docker Hub..."
+  docker push $DOCKER_USERNAME/plannerfrontend:latest
+  docker push $DOCKER_USERNAME/plannerbackend:latest
+  echo "Updating deployment files with Docker images..."
+  # Backup original files
+  cp backend-deployment.yaml backend-deployment.yaml.bak
+  cp frontend-deployment.yaml frontend-deployment.yaml.bak
+  # Replace image names in deployment files
+  sed -i "s|image: .*$|image: $DOCKER_USERNAME/plannerbackend:latest|g" backend-deployment.yaml
+  sed -i "s|image: .*$|image: $DOCKER_USERNAME/plannerfrontend:latest|g" frontend-deployment.yaml
+  UPDATE_YAMLS=true
+else
+  echo "Skipping Docker image rebuild."
+fi
 
-function build_and_push_images() {
-    echo "Building Docker images..."
+# Ask if the user wants to deploy the resources
+read -p "Do you want to deploy the resources? (y/n): " deploy_choice
+if [ "$deploy_choice" == "y" ]; then
+  echo "Deploying resources..."
+  kubectl apply -f contour.yaml
+  kubectl apply -f ingress.yaml
+  kubectl apply -f backend-deployment.yaml
+  kubectl apply -f frontend-deployment.yaml
 
-    # Build frontend image
-    docker build -t $DOCKER_USERNAME/plannerfrontend:latest ./client
-    # Build backend image
-    docker build -t $DOCKER_USERNAME/plannerbackend:latest ./server
-
-    echo "Pushing Docker images to Docker Hub..."
-    docker push $DOCKER_USERNAME/plannerfrontend:latest
-    docker push $DOCKER_USERNAME/plannerbackend:latest
-}
-
-function update_deployment_files() {
-    echo "Updating deployment files with Docker images..."
-
-    # Backup original files
-    cp backend-deployment.yaml backend-deployment.yaml.bak
-    cp frontend-deployment.yaml frontend-deployment.yaml.bak
-
-    # Replace image names in deployment files
-    sed -i "s|image: .*$|image: $DOCKER_USERNAME/plannerbackend:latest|g" backend-deployment.yaml
-    sed -i "s|image: .*$|image: $DOCKER_USERNAME/plannerfrontend:latest|g" frontend-deployment.yaml
-}
-
-function restore_deployment_files() {
+  # Restore original YAML files if they were modified
+  if [ "$UPDATE_YAMLS" == "true" ]; then
     echo "Restoring original deployment files..."
-
-    # Restore original files
     mv backend-deployment.yaml.bak backend-deployment.yaml
     mv frontend-deployment.yaml.bak frontend-deployment.yaml
-}
+  fi
 
-function deploy() {
-    build_and_push_images
-    update_deployment_files
+  echo "Deployment complete."
+else
+  echo "Skipping deployment."
+fi
 
-    echo "Deploying resources..."
-    kubectl apply -f deploy.yaml
-    kubectl apply -f backend-deployment.yaml
-    kubectl apply -f frontend-deployment.yaml
-    kubectl apply -f ingress.yaml
-
-    restore_deployment_files
-    echo "Deployment complete."
-}
-
-function teardown() {
-    echo "Tearing down resources..."
+# Optionally delete resources
+read -p "Do you want to delete the deployed resources? (y/n): " delete_choice
+if [ "$delete_choice" == "y" ]; then
+  echo "Deleting resources..."
+  kubectl delete -f backend-deployment.yaml
+  kubectl delete -f frontend-deployment.yaml
+  read -p "Do you want to remove the ingress projectcontour? (y/n): " contour_choice
+  if [ "$contour_choice" == "y" ]; then
+    kubectl delete -f contour.yaml
     kubectl delete -f ingress.yaml
-    kubectl delete -f frontend-deployment.yaml
-    kubectl delete -f backend-deployment.yaml
-    kubectl delete -f deploy.yaml
-    echo "Teardown complete."
-}
-
-case "$ACTION" in
-  deploy)
-    if [ -z "$DOCKER_USERNAME" ]; then
-      echo "Usage: $0 deploy <docker_username>"
-      exit 1
-    fi
-    deploy
-    ;;
-  teardown)
-    teardown
-    ;;
-  *)
-    echo "Usage: $0 {deploy|teardown} [docker_username]"
-    exit 1
-    ;;
-esac
+  fi
+  echo "Deletion complete."
+else
+  echo "Resources not deleted."
+fi
