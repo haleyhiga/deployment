@@ -38,28 +38,29 @@ CREATE TABLE planner (
 
 ## Deployment Guide
 
-### Building and Pushing Docker Images
-
-To build and push the Docker images for both the frontend and backend applications, use the `deploy.sh` script with your Docker Hub username.
-
 **Prerequisites:**
 
 - Docker installed and running.
 - Logged in to Docker Hub (`docker login`).
+- MicroK8s installed (See bottom for install)
+- Ingress enabled (EX: `microk8s enable dns dashboard ingress`)
 
 **Steps:**
 
-Run the deploy script with the deploy option and your Docker Hub username:
-
+Run the deploy script from the main directory (ex. deployment) and follow the steps/questions: 
 ```bash
-./deploy.sh deploy <docker_username>
+./deploy.sh
 ```
+*Please listen to the scripts questions*
 
-Replace `<docker_username>` with your actual Docker Hub username.
+**To build properly from nothing:**
+1. Yes to set your URL (has to be a domain)
+2. Yes to rebuild docker images
+3. Yes to deploy
+4. No to delete
 
 This script performs the following steps:
-
-- Builds the Docker images for both the frontend and backend using the specified Docker Hub username.
+- Builds the Docker images for both the frontend and backend using the specified Docker Hub username under /planner(frontend, backend).
 - Pushes the Docker images to Docker Hub.
 - Updates the image names in your `backend-deployment.yaml` and `frontend-deployment.yaml` files.
 - Applies the Kubernetes deployment and service configurations.
@@ -73,17 +74,17 @@ docker login
 
 ### Applying Kubernetes YAML Files
 
-The `deploy.sh` script applies the necessary Kubernetes YAML files:
+The `deploy.sh` script applies the necessary Kubernetes YAML files if you say yes to deploy:
 
-- `deploy.yaml`: Namespace and necessary roles and bindings.
+- `contour.yaml`: Namespace and necessary roles and bindings.
 - `backend-deployment.yaml`: Deployment and service for the backend application.
 - `frontend-deployment.yaml`: Deployment and service for the frontend application.
 - `ingress.yaml`: Ingress configurations for routing.
-
+  
 To tear down the Kubernetes resources, run:
-
+(It will ask you questions, just press enter until it says if you want to delete)
 ```bash
-./deploy.sh teardown
+./deploy.sh 
 ```
 
 ### Updating Hosts File for Local Testing
