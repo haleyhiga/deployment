@@ -10,13 +10,14 @@ let inputHomeworkNotes = document.querySelector("#add-homework-notes");
 let saveHomeworkButton = document.querySelector("#save-homework-button")
 let addHomeworkButton = document.querySelector("#add-homework-button");
 
-
 let editID = null;
 
 // add stuff here
+// add stuff here
 const apiUrl = window.location.protocol === 'file:'
-? 'http://localhost:8080' // Local API server during development
-: ''; // Production API
+  ? 'http://localhost:8080/backend' // Local API server during development
+  : 'http://planner.zorran.tech/backend'; // Use the Ingress path for the backend
+
 
 function saveHomework(){
     console.log("Save button clicked.")
@@ -28,10 +29,10 @@ function saveHomework(){
 
     console.log("Data:",data)
     let method = "POST";
-    let URL = "http://localhost:8080/homework"
+    let URL = `${apiUrl}/homework`;
     if(editID){
         method = "PUT";
-        URL = "http://localhost:8080/homework/"+editID;
+        URL = `${apiUrl}/homework/${editID}`;
     }
     fetch(URL,{
         method: method,
@@ -43,7 +44,6 @@ function saveHomework(){
         console.log("New homework created",response)
         plannerWrapper.textContent = "";
         loadHomeworkFromServer()
-        
     })
     inputHomeworkName.value = "";
     inputHomeworkDate.value = "";
@@ -52,6 +52,7 @@ function saveHomework(){
     inputHomeworkNotes.value = "";
     editID = null; 
 }
+
 
 function addHomework(data){
     console.log("Added homework")
@@ -99,7 +100,7 @@ function addHomework(data){
 }
 
 function loadHomeworkFromServer() {
-    fetch("http://localhost:8080/homework")
+    fetch(`${apiUrl}/homework`)
     .then(function(response){
         response.json()
             .then(function(data){
@@ -115,22 +116,21 @@ function loadHomeworkFromServer() {
 function deleteHomework(data){
     console.log("delete button");
     console.log("DataID:",data)
-    let URL =  + data.id;
+    let URL = `${apiUrl}/homework/${data.id}`;
     if (confirm("Are you sure you want to delete?")==true) {
-        fetch("http://localhost:8080/homework/" + data.id, {
+        fetch(URL, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
             }
+        }).then(function(response){
+            console.log("Delete data", response)
+            plannerWrapper.textContent = "";
+            loadHomeworkFromServer()
+        })
+    }
+}
 
-    }).then(function(response){
-        console.log("Delete data", response)
-        plannerWrapper.textContent = "";
-        loadHomeworkFromServer()
-        
-    })
-}
-}
 
 saveHomeworkButton.onclick = saveHomework;
 addHomeworkButton.onclick = saveHomework;

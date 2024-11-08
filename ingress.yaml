@@ -1,0 +1,39 @@
+# Ingress for the backend service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: planner-ingress-backend
+  annotations:
+    projectcontour.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: planner.zorran.tech
+      http:
+        paths:
+          - path: /backend
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 8080
+
+---
+
+# Ingress for the frontend service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: planner-ingress-frontend
+spec:
+  rules:
+    - host: planner.zorran.tech
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
