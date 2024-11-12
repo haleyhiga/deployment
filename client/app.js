@@ -15,8 +15,8 @@ let editID = null;
 // add stuff here
 // add stuff here
 const apiUrl = window.location.protocol === 'file:'
-  ? 'http://localhost:8080/backend' // Local API server during development
-  : 'http://planner.zorran.tech/backend'; // Use the Ingress path for the backend
+  ? 'http://localhost:8080' // Local API server during development
+  : ''; // Use the Ingress path for the backend
 
 
 function saveHomework(){
