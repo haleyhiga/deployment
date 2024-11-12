@@ -1,0 +1,37 @@
+# Ingress for the backend service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: haleyplanner-ingress-backend
+  annotations:
+    projectcontour.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: haley.zorran.tech
+      http:
+        paths:
+          - path: /homework
+            pathType: Prefix
+            backend:
+              service:
+                name: haleybackend-service
+                port:
+                  number: 8080
+---
+# Ingress for the frontend service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: haleyplanner-ingress-frontend
+spec:
+  rules:
+    - host: haley.zorran.tech
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: haleyfrontend-service
+                port:
+                  number: 80
