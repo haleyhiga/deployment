@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: haleybackend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: haleybackend
+  template:
+    metadata:
+      labels:
+        app: haleybackend
+    spec:
+      containers:
+      - name: backend
+        image: zorranschool/haleyplannerbackend:test
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: haleybackend-service
+spec:
+  selector:
+    app: haleybackend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
